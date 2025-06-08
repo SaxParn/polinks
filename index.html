@@ -1,0 +1,301 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Editable Video Compilation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .category-content { display: none; }
+        .category-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-6">My Editable Video Compilation</h1>
+        <!-- Add New Link Form -->
+        <div class="bg-white p-4 rounded shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4">Add New Link</h2>
+            <div class="space-y-4">
+                <input id="newLinkUrl" type="text" placeholder="Enter URL" class="w-full p-2 border rounded">
+                <input id="newLinkDesc" type="text" placeholder="Enter Description" class="w-full p-2 border rounded">
+                <textarea id="newLinkNote" placeholder="Enter Note (optional)" class="w-full p-2 border rounded"></textarea>
+                <select id="newLinkCategory" class="w-full p-2 border rounded">
+                    <option value="">Select Category</option>
+                </select>
+                <input id="newCategory" type="text" placeholder="Or enter new category name" class="w-full p-2 border rounded">
+                <button onclick="addLink()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">Add Link</button>
+            </div>
+        </div>
+        <!-- Link Categories -->
+        <div id="categories" class="space-y-4"></div>
+    </div>
+    <script>
+        // Initial data structure
+        let categories = {
+            "Full Nelson": [
+                { url: "https://hotmovs.com/videos/9789718/full-nelson-super-compilation/", desc: "Hotmovs: Full Nelson Super Compilation - 3 hours of hot Full Nelson position.", note: "Watched until minute 14." },
+                { url: "https://www.eporner.com/video-5ORDmPDs6KA/nelson-hardcore-core-shivaniurmila/", desc: "Eporner: Nelson Hardcore Core Shivaniurmila - 3 hours of Hardcore Full Nelson.", note: "" },
+                { url: "https://noodlemagazine.com/watch/-227115367_456239170", desc: "Noodlemagazine: Anal Full Nelson Compilation - Anal Full Nelson compilation.", note: "" }
+            ],
+            "Creampie": [
+                { url: "https://www.eporner.com/video-E5PR1yfPguz/cream-pie-collection-9h-by-jesza/", desc: "Eporner: Cream Pie Collection 9h by Jesza - 9 hours of sex and Creampie.", note: "" }
+            ],
+            "Reverse Cowgirl": [
+                { url: "https://www.eporner.com/video-vffWz3P0cjr/reverse-cowgirl-non-stop-fucking-compilation/", desc: "Eporner: Reverse Cowgirl Non-Stop Fucking Compilation - 45 minutes of Reverse Cowgirl.", note: "" },
+                { url: "https://www.tnaflix.com/anal-porn/Anal-Reverse-Cowgirl-Compilation-Vol-1/video10977367", desc: "Tnaflix: Anal Reverse Cowgirl Compilation Vol 1 - About 2 hours of Anal Reverse Cowgirl.", note: "" },
+                { url: "https://www.tnaflix.com/anal-porn/Reverse-Cowgirl-Anal-Fucking-2/video6083741", desc: "Tnaflix: Reverse Cowgirl Anal Fucking 2 - Reverse Cowgirl anal compilation.", note: "" },
+                { url: "https://www.tnaflix.com/anal-porn/Reverse-Cowgirl-Anal-Fucking-3/video6082711", desc: "Tnaflix: Reverse Cowgirl Anal Fucking 3 - Reverse Cowgirl anal compilation.", note: "" },
+                { url: "https://www.tnaflix.com/amateur-porn/reverse-cowgirl-anal-teen-4/video5923989", desc: "Tnaflix: Reverse Cowgirl Anal Teen 4 - Reverse Cowgirl anal teen compilation.", note: "" },
+                { url: "https://www.tnaflix.com/anal-porn/Reverse-Cowgirl-Anal-5/video7411272", desc: "Tnaflix: Reverse Cowgirl Anal 5 - Reverse Cowgirl anal compilation.", note: "" },
+                { url: "https://www.tnaflix.com/anal-porn/Reverse-Cowgirl-Anal-6/video7398070", desc: "Tnaflix: Reverse Cowgirl Anal 6 - Reverse Cowgirl anal compilation.", note: "" },
+                { url: "https://www.tnaflix.com/anal-porn/Reverse-Cowgirl-Anal-7/video7397987", desc: "Tnaflix: Reverse Cowgirl Anal 7 - Reverse Cowgirl anal compilation.", note: "" },
+                { url: "https://www.tnaflix.com/anal-porn/Reverse-Cowgirl-Anal-8/video7373008", desc: "Tnaflix: Reverse Cowgirl Anal 8 - Reverse Cowgirl anal compilation.", note: "" }
+            ],
+            "Cumshots": [
+                { url: "https://www.eporner.com/video-Cvpa1wAWVhc/cumshots-compilation-1/", desc: "Eporner: Cumshots Compilation #1 - Cumshot Compilation #1.", note: "" },
+                { url: "https://www.eporner.com/video-HEUyQ7R3uTh/cumshots-compilation-2/", desc: "Eporner: Cumshots Compilation #2 - Cumshot Compilation #2.", note: "" },
+                { url: "https://www.eporner.com/video-PbEGggsgeXl/cumshots-compilation-3/", desc: "Eporner: Cumshots Compilation #3 - Cumshot Compilation #3.", note: "" },
+                { url: "https://www.eporner.com/video-aDmPcT8GrLX/cumshots-compilation-4/", desc: "Eporner: Cumshots Compilation #4 - Cumshot Compilation #4.", note: "" },
+                { url: "https://www.eporner.com/video-Vq7XPyc9d46/cumshots-compilation-5/", desc: "Eporner: Cumshots Compilation #5 - Cumshot Compilation #5.", note: "" },
+                { url: "https://www.eporner.com/video-XRn5UoQfTVY/cumshots-compilation-6/", desc: "Eporner: Cumshots Compilation #6 - Cumshot Compilation #6.", note: "" },
+                { url: "https://www.eporner.com/video-zov0MQOYFKX/cumshots-compilation-7/", desc: "Eporner: Cumshots Compilation #7 - Cumshot Compilation #7.", note: "" },
+                { url: "https://www.eporner.com/video-bK9xUt9Yvo2/cumshots-compilation-8/", desc: "Eporner: Cumshots Compilation #8 - Cumshot Compilation #8.", note: "" },
+                { url: "https://www.eporner.com/video-hCzdR7TQ1fz/cumshots-compilation-9/", desc: "Eporner: Cumshots Compilation #9 - Cumshot Compilation #9.", note: "" },
+                { url: "https://www.eporner.com/video-tD6K9spt4ns/cumshots-compilation-10/", desc: "Eporner: Cumshots Compilation #10 - Cumshot Compilation #10.", note: "" },
+                { url: "https://www.eporner.com/video-xRXom7Vw6gD/cumshots-compilation-11/", desc: "Eporner: Cumshots Compilation #11 - Cumshot Compilation #11.", note: "" },
+                { url: "https://www.eporner.com/video-4dTTmOcbU5a/cumshots-compilation-12/", desc: "Eporner: Cumshots Compilation #12 - Cumshot Compilation #12.", note: "" },
+                { url: "https://www.eporner.com/video-pHEQ5BscbgB/cumshots-compilation-13/", desc: "Eporner: Cumshots Compilation #13 - Cumshot Compilation #13.", note: "" },
+                { url: "https://www.eporner.com/video-9KCpQVcZWEt/cumshots-compilation-14/", desc: "Eporner: Cumshots Compilation #14 - Cumshot Compilation #14.", note: "" },
+                { url: "https://www.eporner.com/video-dNJb3O42gKw/cumshots-compilation-15/", desc: "Eporner: Cumshots Compilation #15 - Cumshot Compilation #15.", note: "" },
+                { url: "https://www.eporner.com/video-I8w8ymW8vYA/cumshots-compilation-16/", desc: "Eporner: Cumshots Compilation #16 - Cumshot Compilation #16.", note: "" },
+                { url: "https://www.eporner.com/video-zkIvzStLpIG/cumshots-compilation-17/", desc: "Eporner: Cumshots Compilation #17 - Cumshot Compilation #17.", note: "" },
+                { url: "https://www.eporner.com/video-PHYqvpTN0OV/bbc-cum-sluts-compilation/", desc: "Eporner: BBC Cum Sluts Compilation - BBC cumshot compilation.", note: "" },
+                { url: "https://spankbang.com/8q19e/video/mega+cumshot+compilation", desc: "Spankbang: Mega Cumshot Compilation - Mega cumshot compilation.", note: "" },
+                { url: "https://www.eporner.com/video-3PVx4bjcjWP/epic-cumshot-compilation", desc: "Eporner: Epic Cumshot Compilation - Epic cumshot compilation.", note: "" },
+                { url: "https://spankbang.com/6nt8i/video/cum+on+her+tits+cumshot+compilation", desc: "Spankbang: Cum on Her Tits Cumshot Compilation - Cum on her tits cumshot compilation.", note: "" },
+                { url: "https://spankbang.com/1en1w/video/fav+cum+compilation", desc: "Spankbang: Fav Cum Compilation - Favorite cumshot compilation.", note: "" },
+                { url: "https://spankbang.com/1ux0d/video/amazing+cum+compilation", desc: "Spankbang: Amazing Cum Compilation - Amazing cumshot compilation.", note: "" },
+                { url: "https://spankbang.com/7dp6l/video/fast+cut+cumshots", desc: "Spankbang: Fast Cut Cumshots - Fast cut cumshot compilation.", note: "" },
+                { url: "https://www.eporner.com/video-jRnczq3qAsd/rapid-fire-cumshot-compilation/", desc: "Eporner: Rapid Fire Cumshot Compilation - Rapid fire cumshot compilation.", note: "" },
+                { url: "https://spankbang.com/2byfx/video/quick+cut+compilation", desc: "Spankbang: Quick Cut Compilation - Quick cut cumshot compilation.", note: "" },
+                { url: "https://spankbang.com/7jr3f/video/fast+and+furious+cumshot+compilation", desc: "Spankbang: Fast and Furious Cumshot Compilation - Fast and furious cumshot compilation.", note: "" }
+            ],
+            "Anal Cowgirl": [
+                { url: "https://spankbang.com/8cz7t/video/world+best+anal+cowgirl+compilation+evermade", desc: "Spankbang: World Best Anal Cowgirl Compilation Evermade - About 2 hours of Anal Cowgirl.", note: "" }
+            ],
+            "Stand and Carry": [
+                { url: "https://www.eporner.com/video-EjhVxdP9ObO/stand-and-carry-compilation/", desc: "Eporner: Stand and Carry Compilation - 30 minutes of Stand and Carry.", note: "" }
+            ],
+            "Cowgirl (Close-Up)": [
+                { url: "https://noodlemagazine.com/watch/-46863849_456239229", desc: "Noodlemagazine: Cowgirl Close-Up - 8 hours of Cowgirl with very close camera.", note: "" }
+            ],
+            "Piledriver": [
+                { url: "https://spankbang.com/1bqr4/video/piledriver+compilation", desc: "Spankbang: Piledriver Compilation - 25 minutes of Piledriver.", note: "" },
+                { url: "https://pornzog.com/video/21815052/big-dicks-loves-anal-piledriver-compilation-1/", desc: "Pornzog: Big Dicks Loves Anal Piledriver Compilation 1 - Anal Piledriver compilation.", note: "" }
+            ],
+            "Prone Bone": [
+                { url: "https://spankbang.com/8u7wa/video/anal+prone+bone+compilation", desc: "Spankbang: Anal Prone Bone Compilation - Anal Prone Bone compilation.", note: "" },
+                { url: "https://pornzog.com/video/12475436/lying-doggystyle-prone-bone-best-compilation-no-music/", desc: "Pornzog: Lying Doggystyle Prone Bone Best Compilation No Music - Prone Bone compilation, no music.", note: "" },
+                { url: "https://pornzog.com/video/11779141/prone-bone-compilation/", desc: "Pornzog: Prone Bone Compilation - Prone Bone compilation.", note: "" },
+                { url: "https://pornzog.com/video/10346469/super-sex-positions-prone-bone-2/", desc: "Pornzog: Super Sex Positions Prone Bone 2 - Prone Bone compilation.", note: "" },
+                { url: "https://pornzog.com/video/11190927/doggy-style-prone-bone-2/", desc: "Pornzog: Doggy Style Prone Bone 2 - Prone Bone compilation.", note: "" }
+            ],
+            "Standing Doggystyle": [
+                { url: "https://spankbang.com/4niyk/video/hardcore+standing+doggystyle+compilation", desc: "Spankbang: Hardcore Standing Doggystyle Compilation - Hardcore Standing Doggystyle compilation.", note: "" }
+            ],
+            "Doggy Style": [
+                { url: "https://www.eporner.com/video-6x5WXPiGqAc/nvg-doggy-style-compilation-longest/", desc: "Eporner: NVG Doggy Style Compilation Longest - 20 hours Doggy Style compilation.", note: "" }
+            ],
+            "Deepthroat": [
+                { url: "https://spankbang.com/6ll5x/video/evilangel+the+sloppiest+deepthroats+face+fucks+compilation+pt+2", desc: "Spankbang: Evilangel The Sloppiest Deepthroats Face Fucks Compilation Pt 2 - Deepthroat compilation.", note: "" },
+                { url: "https://spankbang.com/6bpu6/video/evilangel+sloppy+deepthroats+gag+reflex+facials+compilation", desc: "Spankbang: Evilangel Sloppy Deepthroats Gag Reflex Facials Compilation - Deepthroat compilation with gag reflex and facials.", note: "" },
+                { url: "https://spankbang.com/9g3wd/video/evilangel+years+of+deepthroating+cock+swallowing", desc: "Spankbang: Evilangel Years of Deepthroating Cock Swallowing - Deepthroat compilation with cock swallowing.", note: "" }
+            ],
+            "Bukkake Cumshot": [
+                { url: "https://spankbang.com/6gftb/video/blowbanged+bukkake+cum+sluts+compilation+evilangel", desc: "Spankbang: Blowbanged Bukkake Cum Sluts Compilation Evilangel - Bukkake cumshot compilation.", note: "" }
+            ]
+        };
+
+        // Load saved data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('videoCompilation');
+            if (saved) {
+                categories = JSON.parse(saved);
+            }
+            renderCategories();
+            updateCategorySelect();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('videoCompilation', JSON.stringify(categories));
+        }
+
+        // Update category dropdown
+        function updateCategorySelect() {
+            const select = document.getElementById('newLinkCategory');
+            select.innerHTML = '<option value="">Select Category</option>';
+            Object.keys(categories).forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+        // Render categories and links
+        function renderCategories() {
+            const container = document.getElementById('categories');
+            container.innerHTML = '';
+            Object.keys(categories).forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                categoryDiv.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-semibold cursor-pointer bg-blue-500 text-white p-3 rounded flex-grow" onclick="toggleCategory(this)">${category}</h2>
+                        <button onclick="deleteCategory('${category}')" class="bg-red-500 text-white p-2 rounded ml-2 hover:bg-red-600">Delete Category</button>
+                    </div>
+                    <div class="category-content bg-white p-4 rounded shadow">
+                        <ul class="list-disc pl-5" id="${category}-links"></ul>
+                    </div>
+                `;
+                container.appendChild(categoryDiv);
+                const linkList = document.getElementById(`${category}-links`);
+                categories[category].forEach((link, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <a href="${link.url}" target="_blank" class="text-blue-600 hover:underline">${link.desc}</a>
+                        ${link.note ? `<br><strong>Note</strong>: ${link.note}` : ''}
+                        <div class="mt-2">
+                            <button onclick="editLink('${category}', ${index})" class="bg-yellow-500 text-white p-1 rounded hover:bg-yellow-600 mr-2">Edit</button>
+                            <button onclick="deleteLink('${category}', ${index})" class="bg-red-500 text-white p-1 rounded hover:bg-red-600">Delete</button>
+                        </div>
+                    `;
+                    linkList.appendChild(li);
+                });
+            });
+        }
+
+        // Toggle category visibility
+        function toggleCategory(element) {
+            const content = element.parentElement.nextElementSibling;
+            content.classList.toggle('active');
+        }
+
+        // Add new link
+        function addLink() {
+            const url = document.getElementById('newLinkUrl').value.trim();
+            const desc = document.getElementById('newLinkDesc').value.trim();
+            const note = document.getElementById('newLinkNote').value.trim();
+            let category = document.getElementById('newLinkCategory').value;
+            const newCategory = document.getElementById('newCategory').value.trim();
+
+            if (!url || !desc) {
+                alert('URL and Description are required!');
+                return;
+            }
+
+            if (!category && !newCategory) {
+                alert('Select a category or enter a new one!');
+                return;
+            }
+
+            if (newCategory) {
+                category = newCategory;
+                if (!categories[category]) {
+                    categories[category] = [];
+                }
+            }
+
+            categories[category].push({ url, desc, note });
+            saveData();
+            renderCategories();
+            updateCategorySelect();
+            document.getElementById('newLinkUrl').value = '';
+            document.getElementById('newLinkDesc').value = '';
+            document.getElementById('newLinkNote').value = '';
+            document.getElementById('newLinkCategory').value = '';
+            document.getElementById('newCategory').value = '';
+        }
+
+        // Edit link
+        function editLink(category, index) {
+            const link = categories[category][index];
+            const newUrl = prompt('Edit URL:', link.url);
+            const newDesc = prompt('Edit Description:', link.desc);
+            const newNote = prompt('Edit Note:', link.note);
+            if (newUrl && newDesc) {
+                categories[category][index] = { url: newUrl.trim(), desc: newDesc.trim(), note: newNote ? newNote.trim() : '' };
+                saveData();
+                renderCategories();
+            }
+        }
+
+        // Delete link
+        function deleteLink(category, index) {
+            if (confirm('Are you sure you want to delete this link?')) {
+                categories[category].splice(index, 1);
+                if (categories[category].length === 0) {
+                    delete categories[category];
+                }
+                saveData();
+                renderCategories();
+                updateCategorySelect();
+            }
+        }
+
+        // Delete category
+        function deleteCategory(category) {
+            if (confirm(`Are you sure you want to delete the "${category}" category and all its links?`)) {
+                delete categories[category];
+                saveData();
+                renderCategories();
+                updateCategorySelect();
+            }
+        }
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>
